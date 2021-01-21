@@ -6,11 +6,12 @@ class Usuarios {
 
     }
 
-    agregarPersona(id, nombre){
+    agregarPersona(id, nombre, sala){
 
         let persona = {
             id,
-            nombre
+            nombre, 
+            sala
         }
 
         this.personas.push(persona);
@@ -34,14 +35,15 @@ class Usuarios {
     }
 
     getPersonasPorSala(sala){
-        // ...
+        let personasEnSala = this.personas.filter( persona => persona.sala === sala);
+        return personasEnSala;
     }
 
     //Elimina una persona del array y devuelve los datos de la persona borrada
     borrarPersona(id){
 
         let personaBorrada = this.getPersona(id);
-
+        
         this.personas = this.personas.filter( persona => persona.id != id );
 
         return personaBorrada; //Devuelve los datos de la persona borrada, si no la encuentra devuelve un undefined

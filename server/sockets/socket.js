@@ -8,18 +8,21 @@ io.on('connection', (client) => {
 
     client.on('entrarChat', (usuario, callback) => {
 
-        if( !usuario.nombre){
+        if( !usuario.nombre || !usuario.sala){
             return callback({
                 error: true,
-                mensaje: 'El nombre es necesario'
+                mensaje: 'El nombre/sala es necesario'
             });
         }
 
-        let personas = usuarios.agregarPersona( client.id, usuario.nombre);
+        client.join(usuario.sala);
+        
 
-        client.broadcast.emit('listaPersonas', usuarios.getPersonas());
+        let personas = usuarios.agregarPersona( client.id, usuario.nombre, usuario.sala);
+        
+        client.broadcast.to(usuario.sala).emit('listaPersonas', usuarios.getPersonasPorSala(usuario.sala));
 
-        return callback(personas); //sin el return crashea 'callback is not a function'
+        return callback(usuarios.getPersonasPorSala(usuario.sala)); //sin el return crashea 'callback is not a function'
     });
 
     client.on('crearMensaje', (data) => {
@@ -28,7 +31,7 @@ io.on('connection', (client) => {
         
         let mensaje = crearMensaje(persona.nombre, data.mensaje);
 
-        client.broadcast.emit('crearMensaje', mensaje);
+        client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
 
     });
 
@@ -36,8 +39,8 @@ io.on('connection', (client) => {
         
         let personaBorrada = usuarios.borrarPersona(client.id);
         
-        client.broadcast.emit('crearMensaje', crearMensaje('Administrador', `${personaBorrada.nombre} salió`));
-        client.broadcast.emit('listaPersonas', usuarios.getPersonas());
+        client.broadcast.to(personaBorrada.sala).emit('crearMensaje', crearMensaje('Administrador', `${personaBorrada.nombre} salió`));
+        client.broadcast.to(personaBorrada.sala).emit('listaPersonas', usuarios.getPersonasPorSala(personaBorrada.sala));
         
     })
 
