@@ -19,20 +19,21 @@ io.on('connection', (client) => {
         
 
         let personas = usuarios.agregarPersona( client.id, usuario.nombre, usuario.sala);
-        
+        client.broadcast.to(usuario.sala).emit('crearMensaje', crearMensaje('Administrador', `${usuario.nombre} se unió`));
         client.broadcast.to(usuario.sala).emit('listaPersonas', usuarios.getPersonasPorSala(usuario.sala));
 
         return callback(usuarios.getPersonasPorSala(usuario.sala)); //sin el return crashea 'callback is not a function'
     });
 
-    client.on('crearMensaje', (data) => {
+    client.on('crearMensaje', (data, callback) => {
         
         let persona = usuarios.getPersona(client.id);
         
         let mensaje = crearMensaje(persona.nombre, data.mensaje);
 
         client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
-
+        
+        callback(mensaje);
     });
 
     client.on('disconnect', () => {
